@@ -126,12 +126,14 @@ class ChoroplethMap {
   drawLegend() {
       let vis = this;
 
+      
       let legendSize = 30;
       let legendPadding = 0;
-      let legendLeftMargin = 50;
 
       let legendHeight = legendSize * 3;
       let legendWidth = legendSize * 3;
+      let legendLeftMargin = vis.width - legendWidth - 50;
+
 
       let colors = [
           ["#4fade0", "#4e7a8d", "#59483f"],

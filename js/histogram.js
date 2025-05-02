@@ -2,7 +2,7 @@ class Histogram {
     constructor(_config, _data) {
         this.config = {
             parentElement: _config.parentElement,
-            colorScale: d3.scaleOrdinal(["#4fade0", "#e47b41"]), // Two colors
+            colorScale: d3.scaleOrdinal(["#4fade0", "#e47b41"]),
             containerWidth: _config.containerWidth || 700,
             containerHeight: _config.containerHeight || 400,
             margin: _config.margin || {
@@ -16,11 +16,9 @@ class Histogram {
         this.data = _data;
         this.selectedPoints = new Set();
 
-        // Selected attributes for comparison
         this.selectedData1 = "percent_poverty";
         this.selectedData2 = "percent_high_blood_pressure";
 
-        // Track selected bins
         this.selectedBins = new Set();
 
         this.initVis();
@@ -29,11 +27,13 @@ class Histogram {
     initVis() {
         let vis = this;
 
+        
+
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
 
         // Create Scales
-        vis.xScale = d3.scaleLinear().range([0, vis.width]).domain([0, 100]); // 0-100% range
+        vis.xScale = d3.scaleLinear().range([0, vis.width]).domain([0, 100]);
         vis.yScale = d3.scaleLinear().range([vis.height, 0]);
 
         // Axes
@@ -91,17 +91,65 @@ class Histogram {
             updateOtherVisualizations([]);
         });
 
+        vis.brush = d3.brushX()
+    .extent([[0, 0], [vis.width, vis.height]])
+    .on("brush end", brushed);
+
+vis.chart.append("g")
+    .attr("class", "brush")
+    .call(vis.brush);
+
+        vis.chart.append("text")
+        .attr("class", "axis-title x-axis-label")
+        .attr("x", vis.width / 2)
+        .attr("y", vis.height + 30) // Keep this above the bottom margin
+        .attr("text-anchor", "middle")
+        .text("Percentage");
+    
+    // Y-axis label
+    vis.chart.append("text")
+        .attr("class", "axis-title y-axis-label")
+        .attr("x", -vis.height / 2)
+        .attr("y", -35)
+        .attr("transform", "rotate(-90)")
+        .attr("text-anchor", "middle")
+        .text("Count");
         vis.updateVis();
+
+        function brushed(event) {
+            if (!event.selection) {
+                vis.selectedBins.clear();
+                selectedBins.clear();
+                vis.updateHighlighting();
+                updateOtherVisualizations();
+                return;
+            }
+        
+            const [x0, x1] = event.selection.map(vis.xScale.invert);
+        
+            vis.selectedBins.clear();
+        
+            vis.aggregatedData.forEach(bin => {
+                // Select bins that intersect the brush range
+                if (bin.x1 > x0 && bin.x0 < x1) {
+                    vis.selectedBins.add(bin.x0); // use .x0 like in clicks
+                }
+            });
+        
+            selectedBins = new Set([...vis.selectedBins]);
+            vis.updateHighlighting();
+            updateOtherVisualizations();
+        }
     }
 
     updateVis(filteredData = null) {
         let vis = this;
 
         vis.legend.select(".legend-text1")
-            .text(vis.selectedData1.replace(/_/g, " ")); // Update text for first attribute
+            .text(vis.selectedData1.replace(/_/g, " "));
 
         vis.legend.select(".legend-text2")
-            .text(vis.selectedData2.replace(/_/g, " ")); // Update text for second attribute
+            .text(vis.selectedData2.replace(/_/g, " "));
 
         // Preserve the original dataset for resetting
         vis.displayData = filteredData ? filteredData : vis.data;
@@ -146,16 +194,18 @@ class Histogram {
 
         function handleBarClick(event, d) {
             event.stopPropagation();
-
+        
             if (vis.selectedBins.has(d.x0)) {
                 vis.selectedBins.delete(d.x0);
             } else {
                 vis.selectedBins.add(d.x0);
             }
-
+        
+            selectedBins = new Set([...vis.selectedBins]); // ← ADD THIS
             vis.updateHighlighting();
-            updateOtherVisualizations([...vis.selectedBins]);
+            updateOtherVisualizations();
         }
+        
 
         const bars1 = vis.chart.selectAll(".bar1")
             .data(vis.aggregatedData)
@@ -220,19 +270,23 @@ class Histogram {
     }
 }
 
-function updateOtherVisualizations(selectedBins) {
-    if (!selectedBins.length) {
-        scatterplot.updateVis(data);
-        choroplethMap.updateVis(null);
-        return;
+
+
+function updateOtherVisualizations() {
+    let filteredData = data;
+
+    if (selectedBins.size > 0) {
+        filteredData = filteredData.filter(d =>
+            [...selectedBins].some(binStart =>
+                d.percent_poverty >= binStart && d.percent_poverty < binStart + 5
+            )
+        );
     }
 
-    const filteredData = data.filter(d =>
-        selectedBins.some(binStart =>
-            d.percent_poverty >= binStart && d.percent_poverty < binStart + 5
-        )
-    );
+    if (selectedFips.size > 0) {
+        filteredData = filteredData.filter(d => selectedFips.has(d.fips));
+    }
 
-    scatterplot.updateVis(filteredData.length ? filteredData : data);
+    scatterplot.updateVis(filteredData);
     choroplethMap.updateVis(filteredData.length ? filteredData : null);
 }

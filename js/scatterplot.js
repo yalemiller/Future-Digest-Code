@@ -73,6 +73,52 @@ class Scatterplot {
             }
         });
 
+        vis.brush = d3.brush()
+    .extent([[0, 0], [vis.width, vis.height]])
+    .on("brush end", brushed);
+
+    function brushed(event) {
+        if (!event.selection) {
+            vis.selectedPoints.clear();
+            selectedFips.clear();
+            vis.updateHighlighting();
+            histogram.updateVis(vis.data);           
+            choroplethMap.updateVis(null);
+            return;
+        }
+    
+        const [[x0, y0], [x1, y1]] = event.selection;
+        vis.selectedPoints.clear();
+        selectedFips.clear();
+    
+        const brushedData = [];
+    
+        vis.data.forEach(d => {
+            const x = vis.xScale(+d[vis.selectedX]);
+            const y = vis.yScale(+d[vis.selectedY]);
+    
+            if (x >= x0 && x <= x1 && y >= y0 && y <= y1) {
+                vis.selectedPoints.add(d);
+                selectedFips.add(d.fips);
+                brushedData.push(d);
+            }
+        });
+    
+        vis.updateHighlighting();
+        histogram.updateVis(brushedData.length > 0 ? brushedData : vis.data);  
+        updateOtherVisualizations();
+    }
+    
+    // ✅ Now brush uses that defined function
+    vis.brush = d3.brush()
+        .extent([[0, 0], [vis.width, vis.height]])
+        .on("brush end", brushed);
+    
+    vis.chart.append("g")
+        .attr("class", "brush")
+        .call(vis.brush);
+    
+
     }
 
     decideColor(attr1, attr2) {
@@ -205,6 +251,8 @@ class Scatterplot {
                 0.1);
 
 
-    }
+    } 
 
 }
+
+

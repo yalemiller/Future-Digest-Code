@@ -1,5 +1,8 @@
 let data, scatterplot, histogram, choroplethMap;
 
+let selectedBins = new Set();
+let selectedFips = new Set();
+
 // Load CSV data and process it
 // Converts numeric columns and initializes visualization components
 d3.csv('data/data.csv')
@@ -21,20 +24,7 @@ d3.csv('data/data.csv')
             .range(['#1f77b4', '#ff7f0e'])
             .domain(['Data 1', 'Data 2']);
 
-        // Add UI elements: Title and dropdowns for attribute selection
-        d3.select("body").append("div")
-            .attr("id", "dropdown-container")
-            .style("position", "absolute")
-            .style("top", "10px")
-            .style("left", "10px")
-            .html(`
-        <h1>Poverty vs Health Issues in the United States</h1>
-        <h3>Data Provided by the CDC 2024 Health Data</h3>
-        <label for="data1">Select Attribute 1:</label>
-        <select id="data1"></select>
-        <label for="data2">Select Attribute 2:</label>
-        <select id="data2"></select>
-      `);
+    
 
         // List of columns to populate dropdowns
         const columns = ["percent_poverty", "percent_high_blood_pressure", "percent_stroke", "percent_high_cholesterol", "percent_eldery"];
@@ -52,8 +42,14 @@ d3.csv('data/data.csv')
         // Initialize Histogram visualization
         histogram = new Histogram({
             parentElement: '#histogram',
-            colorScale
-        }, data);
+            colorScale,
+            margin: {
+              top: 50,
+              right: 50,
+              bottom: 40,
+              left: 70  // ← increased from ~40 to 70
+            }
+          }, data);
         histogram.selectedData1 = "percent_poverty";
         histogram.selectedData2 = "percent_high_blood_pressure";
         histogram.updateVis();
@@ -104,15 +100,29 @@ Promise.all([
     .then(([geoData, countyData]) => {
         // Merge CSV data into GeoJSON structure
         geoData.objects.counties.geometries.forEach(d => {
-            let match = countyData.find(row => row.fips === d.id || "0" + row.fips === d.id);
-
+            // Ensure .properties always exists
+            d.properties = d.properties || {};
+        
+            // Find matching CSV row by FIPS (with padding fallback)
+            let match = countyData.find(row =>
+                row.fips === d.id || row.fips.padStart(5, '0') === d.id
+            );
+        
             if (match) {
-                d.properties = {
-                    ...match
-                };
+                Object.assign(d.properties, match);
                 d.properties.pop = +match.percent_poverty;
+            } else {
+                // Provide safe defaults to avoid breaking the map
+                d.properties.county_name = "Unknown";
+                d.properties.state = "Unknown";
+                d.properties.percent_poverty = undefined;
+                d.properties.percent_high_blood_pressure = undefined;
+                d.properties.percent_stroke = undefined;
+                d.properties.percent_high_cholesterol = undefined;
+                d.properties.percent_eldery = undefined;
             }
         });
+        
 
         // Initialize Choropleth Map
         choroplethMap = new ChoroplethMap({
