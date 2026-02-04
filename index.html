@@ -1,117 +1,48 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>D3 Project Starter Template</title>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="data:;base64,iVBORwOKGO=" />
-    <link rel="stylesheet" href="css/style.css" />
-    <style>
-        .main-container {
-            display: flex;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Diet + Climate</title>
 
-        .left-panel {
-            flex: 1;
-        }
-
-        .right-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        #histogram {
-            flex: 1;
-            width: 100%;
-            height: 50%;
-        }
-
-        #scatterplot {
-            flex: 2;
-            width: 100%;
-            height: 50%;
-        }
-
-        .source {
-            margin-top: 20px;
-        }
-
-        /* NEW STYLES for dropdowns */
-        #dropdown-container {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-        }
-
-        #dropdown-container select {
-            font-size: 16px;
-            padding: 6px 12px;
-            margin-right: 10px;
-            width: 250px;
-        }
-
-        #dropdown-container label {
-            font-size: 16px;
-            margin-right: 5px;
-        }
-
-        #dropdown-container h1,
-        #dropdown-container h3 {
-            margin: 5px 0;
-        }
-    </style>
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/scene.css" />
+  <link rel="stylesheet" href="./css/scrolly.css" />
 </head>
+
 <body>
 
-    <!-- Dropdowns -->
-    <div id="dropdown-container">
-        <h1>Poverty vs Health Issues in the United States</h1>
-        <h3>Data Provided by the CDC 2024 Health Data</h3>
-        <label for="data1">Select Attribute 1:</label>
-        <select id="data1"></select>
-        <label for="data2">Select Attribute 2:</label>
-        <select id="data2"></select>
+    <!-- INPUT SCENE -->
+    <div class="scene" id="scene">
+      <div class="bg" id="bg">
+        <div class="sun" id="sun"></div>
+        <div class="grass" id="grass"></div>
+      </div>
+
+      <div class="left">
+        <h1 id="promptText">I start my morning off with</h1>
+
+        <div class="inputRow">
+          <input id="foodInput" type="text" autocomplete="off" />
+          <div class="underline" id="underline"></div>
+        </div>
+
+        <p class="hint" id="hint">Try: coffee, sandwich, peanuts</p>
+      </div>
+
+      <div class="phone">
+        <div class="phoneBelly" id="belly"></div>
+      </div>
     </div>
 
-    <!-- Layout -->
-    <div class="main-container">
-        <div class="left-panel">
-            <div class="viz"></div>
-        </div>
-        <div class="right-panel">
-            <svg id="histogram"></svg>
-            <svg id="scatterplot"></svg>
-        </div>
-    </div>
+    <!-- later: scrolly root goes here -->
+    <!-- <main id="scrollyRoot" style="display:none;"></main> -->
 
-    <svg height="5" width="5" xmlns="http://www.w3.org/2000/svg" version="1.1">
-        <defs>
-            <pattern id="lightstripe" patternUnits="userSpaceOnUse" width="5" height="5">
-                <image
-                    xlink:href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgogIDxyZWN0IHdpZHRoPSc1JyBoZWlnaHQ9JzUnIGZpbGw9J3doaXRlJy8+CiAgPHBhdGggZD0nTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVonIHN0cm9rZT0nIzg4OCcgc3Ryb2tlLXdpZHRoPScxJy8+Cjwvc3ZnPg=="
-                    x="0"
-                    y="0"
-                    width="5"
-                    height="5"
-                ></image>
-            </pattern>
-        </defs>
-    </svg>
 
-    <div id="tooltip"></div>
+  <!-- JS should be outside .paper and at the bottom -->
+    <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+    <script type="module" src="./js/main.js"></script>
 
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
-    <script src="js/topojson.v3.js"></script>
-    <script src="js/d3.v6.min.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/choroplethMap.js"></script>
-    <script src="js/scatterplot.js"></script>
-    <script src="js/histogram.js"></script>
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>
