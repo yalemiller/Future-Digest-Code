@@ -1,3 +1,9 @@
+/*
+ROLE: Global tokens + base defaults
+WHAT IT DOES:
+- Sets accent color and fonts
+*/
+
 :root{
   --accent:#1aa0b3;
   --bad:#e53935;
@@ -9,5 +15,3 @@ body{
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
-
-

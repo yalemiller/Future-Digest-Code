@@ -1,0 +1,32 @@
+/*
+ROLE: Native snap-scrolling “cards”
+WHAT IT DOES:
+- The snapContainer is the ONLY scrollable area (body is locked)
+- Each scene is a snap point (full viewport)
+*/
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;         /* IMPORTANT: prevents body scroll */
+}
+
+.snapContainer {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: auto;         /* we toggle this to hidden for Scene 2 lock */
+  overflow-x: hidden;
+
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+
+  /* optional: makes trackpad feel less “floaty” */
+  overscroll-behavior: none;
+}
+
+.scene {
+  height: 100vh;
+  width: 100vw;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

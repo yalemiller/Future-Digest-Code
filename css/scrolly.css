@@ -1,1 +1,45 @@
-/* placeholder for later (scrollama + D3) */
+/*
+ROLE: Scrolly layout (FULL-BLEED sticky graphic)
+WHAT IT DOES:
+- Makes the sticky graphic fill the entire viewport (like your old version)
+- Places the scroll steps as an invisible overlay that drives Scrollama
+- Removes the left/right column split (fixes giant blank area)
+*/
+
+.scrolly{
+  position: relative;
+  width: 100%;
+  min-height: 700vh; /* 7 scenes * 1 viewport each */
+  overflow-x: hidden;
+}
+
+/* Sticky graphic fills the viewport */
+.scrollyGraphic{
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Steps overlay: they exist to trigger scrollama, not to display content */
+.steps{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none; /* so the sticky UI is clickable */
+}
+
+/* Each step is a full viewport "trigger zone" */
+.step{
+  height: 100vh;
+  width: 100%;
+  display: block;
+}
+
+/* Spacer exists only so the step has height; keep it minimal */
+.spacer{
+  height: 1px;
+  width: 1px;
+}

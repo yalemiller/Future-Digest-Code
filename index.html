@@ -1,48 +1,111 @@
+<!--
+ROLE: Snap scenes with persistent foreground
+WHAT IT DOES:
+- Scenes are full-screen snap points (for scrolling)
+- Foreground (character + belly + UI text) is fixed and DOES NOT move
+- Background is one shared layer that slides up to green on Scene 3+
+-->
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Diet + Climate</title>
+  <title>Capstone — Snap Scenes (Persistent Foreground)</title>
 
-  <link rel="stylesheet" href="./css/base.css" />
-  <link rel="stylesheet" href="./css/scene.css" />
-  <link rel="stylesheet" href="./css/scrolly.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/snap.css" />
+  <link rel="stylesheet" href="css/graphic.css" />
+  <link rel="stylesheet" href="css/focusCard.css" />
+
+  <script src="https://unpkg.com/scrollama"></script>
 </head>
 
 <body>
+  <!-- Scroll container -->
+  <main class="snapContainer" id="snapContainer">
 
-    <!-- INPUT SCENE -->
-    <div class="scene" id="scene">
-      <div class="bg" id="bg">
-        <div class="sun" id="sun"></div>
-        <div class="grass" id="grass"></div>
+    <!-- Snap scenes (content is minimal; they are just snap anchors) -->
+    <section class="scene" data-step="scene0" id="scene0"></section>
+    <section class="scene" data-step="sceneIntro" id="sceneIntro"></section>
+
+    <section class="scene" data-step="scene1" id="scene1"></section>
+    <section class="scene" data-step="scene2" id="scene2"></section>
+    <section class="scene" data-step="scene3" id="scene3"></section>
+    <section class="scene" data-step="scene4" id="scene4"></section>
+    <section class="scene" data-step="scene5" id="scene5"></section>
+    <section class="scene" data-step="scene6" id="scene6"></section>
+    <section class="scene" data-step="scene7" id="scene7"></section>
+
+  </main>
+
+  <!-- FIXED VISUAL LAYER (does not scroll) -->
+  <div class="fixedStage" id="fixedStage">
+
+    <!-- Shared background stack -->
+    <div class="bgStack" id="bgStack" aria-hidden="true">
+      <div class="bgPanel bgPanel--gradient">
+        <div class="sun"></div>
+        <div class="grass"></div>
+      </div>
+      <div class="bgPanel bgPanel--green"></div>
+    </div>
+
+    <!-- Foreground: text + character + belly -->
+    <div class="foreground" id="foreground">
+
+      <!-- Scene 0: SVG Title Screen (ONLY this should show in Scene 0) -->
+      <div id="scene0Title" class="scene0Title" style="display:none;">
+        <img src="./assets/Title.svg" alt="Future Digest" />
       </div>
 
-      <div class="left">
-        <h1 id="promptText">I start my morning off with</h1>
+      <!-- LEFT VIZ CANVAS (empty container for D3 charts + focus card in Scenes 3–6) -->
+      <div class="vizStage" id="vizStage" aria-hidden="true"></div>
 
-        <div class="inputRow">
-          <input id="foodInput" type="text" autocomplete="off" />
-          <div class="underline" id="underline"></div>
+      <div class="leftOverlay">
+
+        <!-- Scene Intro: Head + brief overview -->
+        <div id="sceneIntroCopy" style="display:none;">
+          <h1 class="headline">A quick overview</h1>
+          <p class="introBody">
+            Pick a few foods you eat often. Then scroll to see which ones face the biggest risks
+            — and how average prices could change.
+          </p>
+          <div class="microHint">Scroll to continue</div>
         </div>
 
-        <p class="hint" id="hint">Try: coffee, sandwich, peanuts</p>
+        <!-- Scene 1 headline -->
+        <div id="scene1Copy">
+          <h1 class="headline">You are what you.</h1>
+          <h1 class="headline subtitleLine">But our foods are changing.</h1>
+          <div class="microHint">Scroll to continue</div>
+        </div>
+
+        <!-- Scene 2 question UI -->
+        <div id="scene2UI" style="display:none;">
+          <h1 class="headline" id="qTitle">I start my morning off with</h1>
+
+          <div class="inputRow">
+            <input id="foodInput" type="text" autocomplete="off" />
+            <div class="underline"></div>
+            <div class="hint" id="promptHint">Try: toast, eggs, cereal</div>
+          </div>
+
+          <div class="microHint" id="scene2Hint"></div>
+        </div>
       </div>
 
       <div class="phone">
-        <div class="phoneBelly" id="belly"></div>
-      </div>
+  <div class="phoneArt" id="phoneArt">
+    <img class="phoneImg" src="./assets/Chest.png" alt="Character" />
+  </div>
+
+  <!-- belly overlay stays anchored to the viewport -->
+  <div class="phoneBelly" id="phoneBelly"></div>
+</div>
     </div>
+  </div>
 
-    <!-- later: scrolly root goes here -->
-    <!-- <main id="scrollyRoot" style="display:none;"></main> -->
-
-
-  <!-- JS should be outside .paper and at the bottom -->
-    <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
-    <script type="module" src="./js/main.js"></script>
-
-  <script type="module" src="./js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

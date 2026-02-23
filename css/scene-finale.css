@@ -1,0 +1,9 @@
+/*
+ROLE: Finale scene styles
+WHAT IT DOES:
+- Adds only the styling unique to the finale panel.
+*/
+
+.panel--finale {
+  background: rgba(255,255,255,0.05);
+}

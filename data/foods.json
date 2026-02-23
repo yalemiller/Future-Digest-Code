@@ -1,0 +1,134 @@
+{
+  "foods": [
+    {
+      "id": "coffee",
+      "name": "Coffee",
+      "categories": ["grains"],
+      "riskLevel": "major",
+      "primaryThreat": "rising_temperatures",
+      "cost": {
+        "currentAvg": 1.5,
+        "predictedAvg": 3.75,
+        "currency": "USD",
+        "unit": "cup"
+      }
+    },
+    {
+      "id": "salmon",
+      "name": "Salmon",
+      "categories": ["seafood"],
+      "riskLevel": "major",
+      "primaryThreat": "over_fishing",
+      "cost": {
+        "currentAvg": 12.0,
+        "predictedAvg": 18.5,
+        "currency": "USD",
+        "unit": "lb"
+      }
+    },
+    {
+      "id": "chicken",
+      "name": "Chicken",
+      "categories": ["poultry"],
+      "riskLevel": "minor",
+      "primaryThreat": "rising_temperatures",
+      "cost": {
+        "currentAvg": 4.25,
+        "predictedAvg": 5.75,
+        "currency": "USD",
+        "unit": "lb"
+      }
+    },
+    {
+      "id": "milk",
+      "name": "Milk",
+      "categories": ["dairy"],
+      "riskLevel": "minor",
+      "primaryThreat": "rising_temperatures",
+      "cost": {
+        "currentAvg": 3.5,
+        "predictedAvg": 4.6,
+        "currency": "USD",
+        "unit": "gallon"
+      }
+    },
+    {
+      "id": "rice",
+      "name": "Rice",
+      "categories": ["grains"],
+      "riskLevel": "major",
+      "primaryThreat": "over_harvesting",
+      "cost": {
+        "currentAvg": 1.2,
+        "predictedAvg": 2.1,
+        "currency": "USD",
+        "unit": "lb"
+      }
+    },
+    {
+      "id": "eggs",
+      "name": "Eggs",
+      "categories": ["poultry"],
+      "riskLevel": "minor",
+      "primaryThreat": "rising_temperatures",
+      "cost": {
+        "currentAvg": 3.0,
+        "predictedAvg": 4.25,
+        "currency": "USD",
+        "unit": "dozen"
+      }
+    },
+    {
+      "id": "shrimp",
+      "name": "Shrimp",
+      "categories": ["seafood"],
+      "riskLevel": "major",
+      "primaryThreat": "over_fishing",
+      "cost": {
+        "currentAvg": 9.5,
+        "predictedAvg": 14.0,
+        "currency": "USD",
+        "unit": "lb"
+      }
+    },
+    {
+      "id": "avocado",
+      "name": "Avocado",
+      "categories": ["fruit"],
+      "riskLevel": "major",
+      "primaryThreat": "rising_temperatures",
+      "cost": {
+        "currentAvg": 1.25,
+        "predictedAvg": 2.75,
+        "currency": "USD",
+        "unit": "each"
+      }
+    },
+    {
+      "id": "lettuce",
+      "name": "Lettuce",
+      "categories": ["vegetable"],
+      "riskLevel": "minor",
+      "primaryThreat": "water_scarcity",
+      "cost": {
+        "currentAvg": 1.8,
+        "predictedAvg": 2.6,
+        "currency": "USD",
+        "unit": "head"
+      }
+    },
+    {
+      "id": "apples",
+      "name": "Apples",
+      "categories": ["fruit"],
+      "riskLevel": "none",
+      "primaryThreat": "none",
+      "cost": {
+        "currentAvg": 1.6,
+        "predictedAvg": 1.85,
+        "currency": "USD",
+        "unit": "lb"
+      }
+    }
+  ]
+}

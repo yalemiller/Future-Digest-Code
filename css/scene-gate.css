@@ -1,0 +1,14 @@
+/*
+ROLE: Gate scene styles
+WHAT IT DOES:
+- Adds only the styling unique to the gated step (input area, emphasis).
+*/
+
+.panel--gate {
+  /* Example: make the gate feel more “important” */
+  background: rgba(255,255,255,0.06);
+}
+
+.panel--gate .btn {
+  font-weight: 600;
+}
