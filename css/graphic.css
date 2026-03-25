@@ -27,66 +27,119 @@ WHAT IT DOES:
   position: absolute;
   inset: 0;
   width: 100vw;
-  height: 200vh;          /* two full-screen panels stacked */
-  transform: translateY(0);
-  transition: transform 900ms cubic-bezier(.22,1,.36,1);
+  height: 100vh;
   z-index: 0;
-}
-
-/* slide to green (reveals 2nd panel) */
-body.bg-is-green .bgStack{
-  transform: translateY(-100vh);
+  overflow: hidden;
 }
 
 .bgPanel{
-  width: 100vw;
-  height: 100vh;
-  position: relative;
+  position: absolute;
+  inset: 0;
 }
 
-/* Panel 1: gradient scene */
+/* base sky layer */
 .bgPanel--gradient{
   background: linear-gradient(#b7b7ff, #dfead2);
+  z-index: 1;
+}
+
+/* green fill layer stays underneath */
+.bgPanel--green{
+  background: #2fe07a;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+
+body.bg-is-green .bgPanel--green{
+  opacity: 1;
+}
+
+/* Hill in gradient panel */
+/* ----- BACKGROUND STACK ----- */
+.bgStack{
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bgPanel{
+  position: absolute;
+  inset: 0;
+}
+
+/* base sky layer */
+.bgPanel--gradient{
+  background: linear-gradient(#b7b7ff, #dfead2);
+  z-index: 1;
+}
+
+/* green fill layer stays underneath */
+.bgPanel--green{
+  background: #2fe07a;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+
+body.bg-is-green .bgPanel--green{
+  opacity: 1;
 }
 
 /* Hill in gradient panel */
 .grass{
-  position:absolute;
-  left:-14%;
-  right:-14%;
-  bottom:-24%;
-  height:48%;
-  background:#2fe07a;
+  position: absolute;
+  left: -14%;
+  right: -14%;
+  bottom: -24%;
+  height: 48%;
+  background: #2fe07a;
   border-radius: 60% 60% 0 0;
-  z-index: 1;
+  z-index: 2;
 
-  /* intro entrance defaults (hidden) */
   opacity: 0;
   transform: translateY(80px);
-  transition: transform 750ms cubic-bezier(.22,1,.36,1), opacity 750ms ease;
+  transition:
+    transform 320ms ease-out,
+    opacity 180ms linear,
+    bottom 220ms ease-out,
+    height 220ms ease-out;
 }
 
 /* Sun in gradient panel */
 .sun{
-  position:absolute;
+  position: absolute;
   top: 6vh;
   left: 18vw;
   width: 200px;
   height: 200px;
   border-radius: 50%;
   background: #ced50c;
-  overflow:hidden;
-  z-index: 2;
+  overflow: hidden;
+  z-index: 3;
 
-  /* intro entrance defaults (hidden) */
   opacity: 0;
   transform: translateY(60px);
-  transition: transform 750ms cubic-bezier(.22,1,.36,1), opacity 750ms ease;
+  transition: opacity 160ms linear, transform 180ms ease-out;
 }
+
+body.intro-bg-on .sun{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.bg-is-green .sun{
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
 .sun::after{
-  content:"";
-  position:absolute;
-  inset:-70px;
+  content: "";
+  position: absolute;
+  inset: -70px;
   background: url("./photocopy.jpg") repeat;
   background-size: 800px 800px;
   opacity: 1;
@@ -94,16 +147,74 @@ body.bg-is-green .bgStack{
   pointer-events: none;
 }
 
-/* Sun + grass scroll on in Scene1/Scene2 */
+/* Scene1/2 intro state */
 body.intro-bg-on .sun,
 body.intro-bg-on .grass{
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Panel 2: solid green background */
-.bgPanel--green{
-  background: #2fe07a;
+/* Scene3+ : hill rises to become full background */
+body.bg-is-green .grass{
+  opacity: 1;
+  transform: translateY(0);
+  bottom: 0;
+  height: 120%;
+  border-radius: 0;
+}
+
+body.bg-is-green .sun{
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+/* Sun in gradient panel */
+.sun{
+  position: absolute;
+  top: 6vh;
+  left: 18vw;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: #ced50c;
+  overflow: hidden;
+  z-index: 3;
+
+  opacity: 0;
+  transform: translateY(60px);
+  transition: transform 240ms ease-out, opacity 240ms ease-out;
+}
+
+.sun::after{
+  content: "";
+  position: absolute;
+  inset: -70px;
+  background: url("./photocopy.jpg") repeat;
+  background-size: 800px 800px;
+  opacity: 1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Scene1/2 intro state */
+body.intro-bg-on .sun,
+body.intro-bg-on .grass{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scene3+ : hill rises to become full background */
+body.bg-is-green .grass{
+  opacity: 1;
+  transform: translateY(0);
+  bottom: 0;
+  height: 120%;
+  border-radius: 0;
+}
+
+body.bg-is-green .sun{
+  opacity: 0;
+  transform: translateY(-30px);
 }
 
 /* ----- FOREGROUND ----- */
@@ -231,11 +342,12 @@ body.intro-bg-on .grass{
 /* Food blocks */
 .foodBlock{
   position: relative;
-  height: 92px;
+  min-height: 92px;
   border-radius: 18px;
   overflow: hidden;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   transition: opacity 260ms ease;
 }
@@ -249,14 +361,19 @@ body.intro-bg-on .grass{
   z-index: 0;
 }
 
+.foodBlock.isFocusStatic {
+  opacity: 1;
+  transform: none;
+}
+
 .foodBlock .label{
   position: relative;
   z-index: 2;
   font-weight: 800;
   font-size: 42px;
   color: #fff;
-  line-height: 1;
-  padding: 0 16px;
+  line-height: 1.15;
+  padding: 0 16px 4px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -394,19 +511,55 @@ body.chest-frame{
 
 /* ---------- Scene 0: Title Screen ---------- */
 
+/* ---------- Scene 0: Title Screen ---------- */
+
 .scene0Title{
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 50;
   background: white;
+  transform: translate3d(0, 0, 0);
+  transition: transform 800ms cubic-bezier(.22,1,.36,1);
+  will-change: transform;
+  pointer-events: none;
 }
 
-.scene0Title img{
-  width: min(70vw, 720px);
+.scene0Title.scene0-active {
+  transform: translate3d(0, 0, 0);
+}
+
+.scene0Title.scene0-exit {
+  transform: translate3d(0, -100%, 0);
+}
+
+.scene0Title img {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90vw, 1100px);
   height: auto;
+  display: block;
+}
+
+.titleWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.scene0Hint {
+  position: absolute;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+  opacity: 0;
+  animation:
+    fadeInHint 1s ease forwards 0.8s,
+    bounceHint 2s ease-in-out infinite 2s;
 }
 
 /* Hide everything else in Scene 0 */
@@ -415,4 +568,29 @@ body.scene0-active .leftOverlay,
 body.scene0-active .vizStage{
   opacity: 0;
   pointer-events: none;
+}
+
+@keyframes fadeInHint {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes bounceHint {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+.scene0Title.scene0-exit .scene0Hint {
+  opacity: 0;
+  transition: opacity 200ms ease;
 }

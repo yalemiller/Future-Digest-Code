@@ -3,7 +3,7 @@
     {
       "id": "coffee",
       "name": "Coffee",
-      "categories": ["grains"],
+      "categories": ["grains","poultry","fruit"],
       "riskLevel": "major",
       "primaryThreat": "rising_temperatures",
       "cost": {

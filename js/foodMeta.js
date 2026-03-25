@@ -27,6 +27,8 @@ export function getFoodMeta(foodName) {
   const key = normalize(foodName);
   const food = FOOD_MAP[key];
 
+  unit: food.cost?.unit ?? ""
+
   if (!food) return null;
 
   const current = food.cost?.currentAvg ?? null;
@@ -37,15 +39,21 @@ export function getFoodMeta(foodName) {
     pctRise = Math.round(((predicted - current) / current) * 100);
   }
 
-  return {
-    title: food.name,
-    riskLevel: formatRisk(food.riskLevel),
-    riskDriver: formatThreat(food.primaryThreat),
-    priceFrom: current,
-    priceTo: predicted,
-    pctRise,
-    affected: food.categories ?? []
-  };
+return {
+  id: food.id ?? key,
+  title: food.name ?? food.id ?? "",
+  riskLevel: formatRisk(food.riskLevel),
+  riskDriver: formatThreat(food.primaryThreat),
+  priceFrom: current,
+  priceTo: predicted,
+  pctRise,
+  affected: food.affectedIngredients ?? food.categories ?? [],
+  categories: Array.isArray(food.categories) ? food.categories : [],
+  threats: Array.isArray(food.threats)
+    ? food.threats.map(formatThreat)
+    : [],
+  unit: food.cost?.unit ?? ""
+};
 }
 
 export function formatUSD(n) {

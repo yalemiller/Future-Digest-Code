@@ -1,5 +1,5 @@
 /**
- * ROLE: Snap scene tracking + Scene 2 lock + background slide to green on Scene 3+
+ * ROLE: Scrollama scene tracking + Scene 2 lock + background slide to green on Scene 3+
  */
 
 import {
@@ -15,6 +15,8 @@ import { loadFoodData, isKnownFood } from "./foodMeta.js";
 const sceneIds = ["scene0","sceneIntro","scene1","scene2","scene3","scene4","scene5","scene6","scene7"];
 
 function getContainer(){ return document.getElementById("snapContainer"); }
+
+// ---------------- SCENE 2 LOCK ----------------
 
 function lockScrollToScene2(){
   const container = getContainer();
@@ -38,13 +40,13 @@ function enforceScene2PinIfLocked(){
   const locked = (state.currentStepId === "scene2" && !state.questions.isComplete);
   if (!locked) return;
 
-  // tiny tolerance prevents scroll thrash
   if (Math.abs(container.scrollTop - scene2.offsetTop) > 2) {
     container.scrollTop = scene2.offsetTop;
   }
 }
 
-// ---- Scene 2 UI ----
+// ---------------- SCENE 2 INPUT ----------------
+
 function setupScene2Input(){
   const input = document.getElementById("foodInput");
   const qTitle = document.getElementById("qTitle");
@@ -84,7 +86,6 @@ function setupScene2Input(){
 
     input.classList.remove("inputError");
 
-    // use the input directly as the food key
     answerActiveQuestion(value, value.toLowerCase());
 
     input.value = "";
@@ -106,110 +107,110 @@ function setupScene2Input(){
   syncUI();
 }
 
-// ---- Scene observer (snap cards) ----
-function setupSceneObserver(){
-  const scenes = document.querySelectorAll(".scene");
+// ---------------- APPLY STEP (STATE MACHINE) ----------------
 
-  let lastStepId = null;
-  let rafPending = false;
-  let queuedStepId = null;
+let lastStepId = null;
 
-  async function applyStep(stepId){
-    if (!stepId) return;
-    if (stepId === lastStepId) return;
+async function applyStep(stepId){
+  if (!stepId) return;
 
-    lastStepId = stepId;
-
-    const index = sceneIds.indexOf(stepId);
-    setStep(stepId, index, null);
-
-    // Scene 0: show ONLY the SVG title screen
-    const scene0Title = document.getElementById("scene0Title");
-    if (scene0Title) scene0Title.style.display = (stepId === "scene0") ? "flex" : "none";
-    document.body.classList.toggle("scene0-active", stepId === "scene0");
-
-    // SHOW/HIDE copy blocks
-    const introCopy = document.getElementById("sceneIntroCopy");
-    const scene1Copy = document.getElementById("scene1Copy");
-    const scene2UI   = document.getElementById("scene2UI");
-
-    if (introCopy) introCopy.style.display = (stepId === "sceneIntro") ? "block" : "none";
-    if (scene1Copy) scene1Copy.style.display = (stepId === "scene1") ? "block" : "none";
-    if (scene2UI)   scene2UI.style.display   = (stepId === "scene2") ? "block" : "none";
-
-    // Head-only crop in SceneIntro
-    document.body.classList.toggle("head-only", stepId === "sceneIntro");
-
-    // Chest framing for Scene1+
-    document.body.classList.toggle(
-      "chest-frame",
-      ["scene1","scene2","scene3","scene4","scene5","scene6","scene7"].includes(stepId)
-    );
-
-    // Sun + grass "scroll on" in Scene1/Scene2
-    document.body.classList.toggle("intro-bg-on", ["scene1","scene2"].includes(stepId));
-
-    // Background slide: Scene 3+ => green
-    document.body.classList.toggle(
-      "bg-is-green",
-      ["scene3","scene4","scene5","scene6","scene7"].includes(stepId)
-    );
-
-    // Focus in scenes 3–6
-    if (["scene3","scene4","scene5","scene6"].includes(stepId)) {
-      const focusMap = { scene3:0, scene4:1, scene5:2, scene6:3 };
-      setFoodFocusIndex(focusMap[stepId]);
-    }
-
-    // Scene2 lock
-    if (stepId === "scene2" && !state.questions.isComplete) {
-      lockScrollToScene2();
-      document.getElementById("foodInput")?.focus();
-    } else {
-      unlockScroll();
-    }
-
-    await render(state);
-
-    // only enforce if we are locked (prevents extra work)
-    enforceScene2PinIfLocked();
+  // 🚧 HARD GATE: block forward progression past Scene 2
+  if (
+    !state.questions.isComplete &&
+    ["scene3","scene4","scene5","scene6","scene7"].includes(stepId)
+  ) {
+    lockScrollToScene2();
+    document.getElementById("foodInput")?.focus();
+    return;
   }
 
-  const io = new IntersectionObserver((entries) => {
-    const visible = entries
-      .filter(e => e.isIntersecting)
-      .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (stepId === lastStepId) return;
+  lastStepId = stepId;
 
-    if (!visible) return;
+  const index = sceneIds.indexOf(stepId);
+  setStep(stepId, index, null);
 
-    const stepId = visible.target.dataset.step;
-    queuedStepId = stepId;
+  const scene0Title = document.getElementById("scene0Title");
+  if (scene0Title) {
+    scene0Title.classList.toggle("scene0-active", stepId === "scene0");
+    scene0Title.classList.toggle("scene0-exit", stepId !== "scene0");
+  }
 
-    if (rafPending) return;
-    rafPending = true;
+  document.body.classList.toggle("scene0-active", stepId === "scene0");
 
-    requestAnimationFrame(async () => {
-      rafPending = false;
-      const next = queuedStepId;
-      queuedStepId = null;
-      await applyStep(next);
+  const introCopy = document.getElementById("sceneIntroCopy");
+  const scene1Copy = document.getElementById("scene1Copy");
+  const scene2UI   = document.getElementById("scene2UI");
+
+  if (introCopy) introCopy.style.display = (stepId === "sceneIntro") ? "block" : "none";
+  if (scene1Copy) scene1Copy.style.display = (stepId === "scene1") ? "block" : "none";
+  if (scene2UI)   scene2UI.style.display   = (stepId === "scene2") ? "block" : "none";
+
+  document.body.classList.toggle("head-only", stepId === "sceneIntro");
+
+  document.body.classList.toggle(
+    "chest-frame",
+    ["scene1","scene2","scene3","scene4","scene5","scene6","scene7"].includes(stepId)
+  );
+
+  document.body.classList.toggle("intro-bg-on", ["scene1","scene2"].includes(stepId));
+
+  document.body.classList.toggle(
+    "bg-is-green",
+    ["scene3","scene4","scene5","scene6","scene7"].includes(stepId)
+  );
+
+  if (["scene3","scene4","scene5","scene6"].includes(stepId)) {
+    const focusMap = { scene3:0, scene4:1, scene5:2, scene6:3 };
+    setFoodFocusIndex(focusMap[stepId]);
+  }
+
+  if (stepId === "scene2" && !state.questions.isComplete) {
+    lockScrollToScene2();
+    document.getElementById("foodInput")?.focus();
+  } else {
+    unlockScroll();
+  }
+
+  await render(state);
+  enforceScene2PinIfLocked();
+}
+
+// ---------------- SCROLLAMA SETUP ----------------
+
+function setupScrollama(){
+  const scroller = window.scrollama();
+
+  scroller
+    .setup({
+      step: ".scene",
+      offset: 0.55,
+      debug: false,
+      container: "#snapContainer"
+    })
+    .onStepEnter(async ({ element }) => {
+      const stepId = element.dataset.step;
+      await applyStep(stepId);
     });
 
-  }, { threshold: [0.55, 0.75] });
-
-  scenes.forEach(s => io.observe(s));
-
   const container = getContainer();
+
   container?.addEventListener("scroll", () => {
     enforceScene2PinIfLocked();
   }, { passive: true });
+
+  window.addEventListener("resize", () => scroller.resize());
 }
 
+// ---------------- BOOT ----------------
+
 async function boot() {
-  await loadFoodData();   // ← important
+  await loadFoodData();
 
   setupScene2Input();
-  setupSceneObserver();
+  setupScrollama();
+
+  await applyStep("scene0");
   render(state);
 }
 

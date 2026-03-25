@@ -8,6 +8,7 @@
 
 import { loadRandomWordBoxSvg } from "./wordBoxLoader.js";
 import { getFoodMeta, formatUSD } from "./foodMeta.js";
+import { renderPriceChart } from "./renderPriceChart.js";
 
 /* ---------------------------------------
    Incremental belly rendering (FAST)
@@ -65,14 +66,25 @@ function updateBellyFocus(bellyEl, blockMap, state){
   const focused = foods[state.foodFocusIndex];
   const focusedId = focused?.id;
 
-  // Only toggle classes; no DOM rebuild
+  // Special case:
+  // On the first food-detail scene, keep the focused block visually "stable"
+  // so it does not appear to swap with a second circle.
+  const isFirstFocusScene = state.currentStepId === "scene3";
+
   for (const [id, el] of blockMap.entries()) {
-    el.classList.remove("isFocus", "isNotFocus");
+    el.classList.remove("isFocus", "isNotFocus", "isFocusStatic");
 
     if (!focusActive) continue;
 
-    if (id === focusedId) el.classList.add("isFocus");
-    else el.classList.add("isNotFocus");
+    if (id === focusedId) {
+      if (isFirstFocusScene) {
+        el.classList.add("isFocusStatic");
+      } else {
+        el.classList.add("isFocus");
+      }
+    } else {
+      el.classList.add("isNotFocus");
+    }
   }
 }
 
@@ -120,8 +132,9 @@ function renderFocusPanel(state){
   // Ensure card exists once so opacity transitions work
   let card = panel.querySelector(".focusCard");
   if (!card) {
-    panel.innerHTML = `<div class="focusCard"></div>`;
-    card = panel.querySelector(".focusCard");
+    card = document.createElement("div");
+    card.className = "focusCard";
+    panel.appendChild(card);
   }
 
   if (!focusActive || !focused) {
@@ -130,46 +143,128 @@ function renderFocusPanel(state){
   }
 
   const meta = getFoodMeta(focused.foodKey || focused.name);
+  if (!meta) {
+    card.classList.remove("isVisible");
+    return;
+  }
 
   // Use food color (or fallback)
-  card.style.setProperty("--foodColor", focused.color || "#5CC0E6");
+const baseColor = focused.color || "#5CC0E6";
+const darkColor = darkenColor(baseColor, 0.45); // 45% darker
 
-  card.innerHTML = `
-    <div class="focusTop">
-      <div class="focusTitleWrap">
-        <div class="focusTitle">${escapeHtml(meta.title)}</div>
-        <div class="focusRisk">${escapeHtml(meta.riskLevel)}</div>
-      </div>
+card.style.setProperty("--foodColor", baseColor);
+card.style.setProperty("--foodColorDark", darkColor);
 
-      <div class="focusIcons" aria-hidden="true">
-        <span class="focusIconDot"></span>
-        <span class="focusIconDot"></span>
-      </div>
-    </div>
+card.innerHTML = `
+  <div class="focusHeader">
+    <div class="focusHeaderRow">
+      <h2 class="focusTitle">${escapeHtml(meta.title)}</h2>
 
-    <div class="focusDriver">${escapeHtml(meta.riskDriver)}</div>
-
-    <div class="focusStats">
-      <div class="focusPrice">
-        <span class="focusPriceBig">${formatUSD(meta.priceFrom)}</span>
-        <span class="focusPriceMid">to</span>
-        <span class="focusPriceBig">${formatUSD(meta.priceTo)}</span>
-      </div>
-
-      <div class="focusPct">
-        <span class="focusPctBig">${meta.pctRise != null ? `${meta.pctRise}%` : "—"}</span>
-        <span class="focusPctSub">rise in avg cost</span>
+      <div class="focusCategoryIcons" aria-label="Food categories">
+        ${renderCategoryIcons(meta.categories)}
       </div>
     </div>
+  </div>
 
-    <div class="focusBottom">
-      <div class="focusBottomTitle">Affected Ingredients</div>
-      <div class="focusBottomList">${escapeHtml((meta.affected || []).join(", "))}</div>
+  <div class="focusDivider" aria-hidden="true"></div>
+
+  <div class="focusBody">
+    
+    <!-- LEFT COLUMN -->
+    <div class="focusCol focusColLeft">
+      
+      <div class="focusRiskBlock">
+        <div class="focusLabel">Risk Level:</div>
+        <div class="focusRiskValue">
+          ${escapeHtml(getRiskWord(meta.riskLevel))}
+        </div>
+      </div>
+
+      <div class="focusThreatBlock">
+        <div class="focusLabel">Threatened by:</div>
+        <ol class="focusThreatList">
+          ${renderThreatList(meta)}
+        </ol>
+      </div>
+
     </div>
-  `;
+
+    <!-- RIGHT COLUMN -->
+    <div class="focusCol focusColRight">
+      ${renderPriceChart(meta)}
+    </div>
+
+  </div>
+`;
 
   // Fade in (ensure next paint)
   requestAnimationFrame(() => card.classList.add("isVisible"));
+}
+
+function getRiskWord(riskLevel = ""){
+  return String(riskLevel)
+    .replace(/\s*risk\s*$/i, "")
+    .trim()
+    .toUpperCase();
+}
+
+function darkenColor(hex, amount = 0.4){
+  let c = hex.replace("#","");
+
+  if (c.length === 3) {
+    c = c.split("").map(x => x + x).join("");
+  }
+
+  const num = parseInt(c, 16);
+
+  let r = (num >> 16) & 255;
+  let g = (num >> 8) & 255;
+  let b = num & 255;
+
+  r = Math.max(0, Math.floor(r * (1 - amount)));
+  g = Math.max(0, Math.floor(g * (1 - amount)));
+  b = Math.max(0, Math.floor(b * (1 - amount)));
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function renderThreatList(meta){
+  const threats = getThreatItems(meta);
+
+  return threats.map((threat) => `
+    <li>${escapeHtml(threat)}</li>
+  `).join("");
+}
+
+function getThreatItems(meta){
+  if (!meta) return [];
+
+  if (Array.isArray(meta.threats) && meta.threats.length > 0) {
+    return meta.threats;
+  }
+
+  if (meta.riskDriver) {
+    return [meta.riskDriver];
+  }
+
+  return ["No Immediate Threat"];
+}
+
+function renderCategoryIcons(categories = []){
+  if (!Array.isArray(categories) || categories.length === 0) return "";
+
+  return categories.map((category) => {
+    const safeCategory = String(category).trim().toLowerCase();
+    const encodedCategory = encodeURIComponent(safeCategory);
+
+    return `
+      <img
+        class="focusCategoryIcon"
+        src="assets/${encodedCategory}.png"
+        alt="${escapeHtml(safeCategory)} icon"
+      />
+    `;
+  }).join("");
 }
 
 function escapeHtml(str){

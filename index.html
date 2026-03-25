@@ -55,8 +55,11 @@ WHAT IT DOES:
     <div class="foreground" id="foreground">
 
       <!-- Scene 0: SVG Title Screen (ONLY this should show in Scene 0) -->
-      <div id="scene0Title" class="scene0Title" style="display:none;">
-        <img src="./assets/Title.svg" alt="Future Digest" />
+      <div id="scene0Title" class="scene0Title">
+        <div class="titleWrap">
+          <img src="./assets/Title.svg" alt="Future Digest" />
+          <div class="scene0Hint">Swipe down to get started ↓</div>
+        </div>
       </div>
 
       <!-- LEFT VIZ CANVAS (empty container for D3 charts + focus card in Scenes 3–6) -->
@@ -96,13 +99,13 @@ WHAT IT DOES:
       </div>
 
       <div class="phone">
-  <div class="phoneArt" id="phoneArt">
-    <img class="phoneImg" src="./assets/Chest.png" alt="Character" />
-  </div>
+        <div class="phoneArt" id="phoneArt">
+          <img class="phoneImg" src="./assets/Chest.png" alt="Character" />
+        </div>
 
-  <!-- belly overlay stays anchored to the viewport -->
-  <div class="phoneBelly" id="phoneBelly"></div>
-</div>
+        <!-- belly overlay stays anchored to the viewport -->
+        <div class="phoneBelly" id="phoneBelly"></div>
+      </div>
     </div>
   </div>
 
